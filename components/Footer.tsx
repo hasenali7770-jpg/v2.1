@@ -32,7 +32,7 @@ export function Footer({ locale }: { locale: Locale }) {
           <div className="text-sm font-semibold text-ink dark:text-night-text">{tr.footer.links}</div>
           <div className="flex flex-col gap-2">
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className="text-sm text-muted hover:underline dark:text-night-muted">
+              <Link key={l.href} href={l.href as any} className="text-sm text-muted hover:underline dark:text-night-muted">
                 {l.label}
               </Link>
             ))}
@@ -42,10 +42,10 @@ export function Footer({ locale }: { locale: Locale }) {
         <div className="space-y-3">
           <div className="text-sm font-semibold text-ink dark:text-night-text">{tr.footer.follow}</div>
           <div className="flex flex-col gap-2 text-sm text-muted dark:text-night-muted">
-            <Link href={social.instagram} target="_blank" className="hover:underline">Instagram</Link>
-            <Link href={social.facebook} target="_blank" className="hover:underline">Facebook</Link>
-            <Link href={`mailto:${social.email}`} className="hover:underline">{social.email}</Link>
-            <Link href={social.whatsappWaMe} target="_blank" className="hover:underline">{social.whatsappNumberLocal}</Link>
+            <Link href={social.instagram as any} target="_blank" className="hover:underline">Instagram</Link>
+            <Link href={social.facebook as any} target="_blank" className="hover:underline">Facebook</Link>
+            <Link href={`mailto:${social.email}` as any} className="hover:underline">{social.email}</Link>
+            <Link href={social.whatsappWaMe as any} target="_blank" className="hover:underline">{social.whatsappNumberLocal}</Link>
           </div>
         </div>
       </Container>
