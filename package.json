@@ -2,14 +2,11 @@
   "name": "israa-alnoor-academy",
   "version": "2.0.0",
   "scripts": {
-  "dev": "next dev",
-  "build": "next build",  <-- تأكد من وجود هذه الفاصلة هنا
-  "start": "next start",  <-- وتأكد من وجود هذه أيضاً
-  "lint": "next lint",   <-- وهذه كذلك
-  "postinstall": "prisma generate --schema=./schema.prisma && prisma db push"
-}
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate --schema=./schema.prisma && prisma db push"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
