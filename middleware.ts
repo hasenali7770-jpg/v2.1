@@ -4,7 +4,7 @@ import { locales } from "@/lib/i18n";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (pathname.startsWith("/_next") || pathname.startsWith("/api") || pathname.includes(".")) return NextResponse.next();
+if (pathname.startsWith("/_next") || pathname.startsWith("/api") || pathname.startsWith("/admin") || pathname.includes(".")) return NextResponse.next();
   const hasLocale = locales.some((l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`));
   if (hasLocale) return NextResponse.next();
   const url = request.nextUrl.clone();
