@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+const prisma = globalForPrisma.prisma || new PrismaClient();
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-// وظيفة جلب الكورسات (GET)
 export async function GET() {
   try {
     const courses = await prisma.course.findMany({
@@ -11,11 +12,11 @@ export async function GET() {
     });
     return NextResponse.json(courses);
   } catch (error) {
+    console.error("GET Error:", error);
     return NextResponse.json({ error: 'فشل جلب البيانات' }, { status: 500 });
   }
 }
 
-// وظيفة حفظ كورس جديد (POST)
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(newCourse);
   } catch (error) {
+    console.error("POST Error:", error);
     return NextResponse.json({ error: 'فشل حفظ الكورس' }, { status: 500 });
   }
 }
