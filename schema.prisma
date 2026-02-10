@@ -17,3 +17,4 @@ model Course {
   videoUrl    String?
   createdAt   DateTime @default(now())
 }
+
