@@ -9,7 +9,7 @@ datasource db {
 }
 
 
-model Course {
+model course {
   id          Int      @id @default(autoincrement())
   title       String
   description String
