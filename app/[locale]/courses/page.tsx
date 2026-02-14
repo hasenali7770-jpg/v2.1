@@ -19,7 +19,12 @@ interface DBCourse {
 
 export default function CoursesPage() {
   const params = useParams();
-  const locale = (isLocale(params.locale) ? params.locale : "ar") as Locale;
+  
+  // Fix: Handle locale properly (could be string or string[])
+  const localeParam = params.locale;
+  const localeValue = Array.isArray(localeParam) ? localeParam[0] : localeParam;
+  const locale = (isLocale(localeValue) ? localeValue : "ar") as Locale;
+  
   const tr = t(locale);
 
   const [courses, setCourses] = useState<DBCourse[]>([]);
@@ -62,22 +67,22 @@ export default function CoursesPage() {
       cover: dbCourse.image || '/course-covers/default.svg',
       title: { 
         ar: dbCourse.title, 
-        en: dbCourse.title  // Using same title for both languages for now
+        en: dbCourse.title
       },
       short: { 
-        ar: dbCourse.description.substring(0, 100) + '...', 
-        en: dbCourse.description.substring(0, 100) + '...'
+        ar: dbCourse.description.substring(0, 100) + (dbCourse.description.length > 100 ? '...' : ''), 
+        en: dbCourse.description.substring(0, 100) + (dbCourse.description.length > 100 ? '...' : '')
       },
       priceIQD: dbCourse.price,
-      hoursMin: 10, // Default value since not in DB
+      hoursMin: 10,
       tags: { 
-        ar: [], // Empty tags for now
+        ar: [], 
         en: [] 
       }
     }));
   }, [courses]);
 
-  // Extract unique tags (empty for now)
+  // Extract unique tags
   const allTags = useMemo(() => {
     const set = new Set<string>();
     transformedCourses.forEach((c) => c.tags[locale].forEach((tag) => set.add(tag)));
