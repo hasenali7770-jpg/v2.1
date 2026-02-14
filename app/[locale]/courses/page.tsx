@@ -6,7 +6,7 @@ import { Locale, isLocale, t } from "@/lib/i18n";
 import { CourseCard } from "@/components/CourseCard";
 import { useParams } from "next/navigation";
 
-// Define the Course type
+// Define the Course type matching your database
 interface Course {
   id: number;
   title: string;
@@ -52,33 +52,34 @@ export default function CoursesPage() {
     fetchCourses();
   }, [locale]);
 
-  // Extract unique tags from courses (you might want to add tags to your schema)
+  // Extract unique tags from courses (for now empty, can be extended later)
   const allTags = useMemo(() => {
-    // For now, return empty array or you can extract from course data
-    // If you add tags to your schema later, update this
-    return [];
-  }, [courses]);
+    const set = new Set<string>();
+    // If you add tags to your schema later, you can populate this
+    return Array.from(set);
+  }, []);
 
   // Filter and sort courses
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-    return courses
+    const list = courses
       .filter((course) => {
         const title = course.title.toLowerCase();
         const description = course.description.toLowerCase();
         const matchQ = !query || title.includes(query) || description.includes(query);
-        // Add tag filtering later when you add tags to schema
-        return matchQ;
+        const matchTag = !tag; // No tag filtering for now
+        return matchQ && matchTag;
       })
       .slice()
       .sort((a, b) => (sort === "asc" ? a.price - b.price : b.price - a.price));
-  }, [courses, q, sort]);
+    return list;
+  }, [courses, q, tag, sort]);
 
   if (loading) {
     return (
       <Container className="py-10">
         <div className="flex justify-center items-center min-h-[400px]">
-          <p className="text-muted">جاري التحميل...</p>
+          <p className="text-muted dark:text-night-muted">جاري التحميل...</p>
         </div>
       </Container>
     );
@@ -132,6 +133,35 @@ export default function CoursesPage() {
         </div>
       </div>
 
+      <div className="mb-6 rounded-3xl border border-stroke bg-white p-5 shadow-soft dark:border-night-stroke dark:bg-night-surface">
+        <div className="text-sm font-semibold text-ink dark:text-night-text">{tr.coursesPage.filter}</div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            onClick={() => setTag(null)}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+              tag === null
+                ? "bg-brand text-white"
+                : "bg-bg text-ink hover:opacity-90 dark:bg-night-bg dark:text-night-text"
+            }`}
+          >
+            {locale === "ar" ? "الكل" : "All"}
+          </button>
+          {allTags.map((tTag) => (
+            <button
+              key={tTag}
+              onClick={() => setTag(tTag)}
+              className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                tag === tTag
+                  ? "bg-brand text-white"
+                  : "bg-bg text-ink hover:opacity-90 dark:bg-night-bg dark:text-night-text"
+              }`}
+            >
+              {tTag}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {filtered.length === 0 ? (
         <div className="rounded-3xl border border-stroke bg-white p-6 text-sm text-muted shadow-soft dark:border-night-stroke dark:bg-night-surface dark:text-night-muted">
           {tr.coursesPage.empty}
@@ -142,11 +172,13 @@ export default function CoursesPage() {
             <CourseCard 
               key={course.id} 
               course={{
-                ...course,
-                // Add any missing fields that CourseCard expects
-                slug: course.id.toString(), // Use id as slug temporarily
-                short: course.description.substring(0, 100), // Truncate description for short
-                tags: { en: [], ar: [] } // Empty tags for now
+                slug: course.id.toString(),
+                title: { [locale]: course.title },
+                short: { [locale]: course.description.substring(0, 100) + '...' },
+                description: { [locale]: course.description },
+                priceIQD: course.price,
+                image: course.image || '/placeholder-course.jpg',
+                tags: { [locale]: [] } // Empty tags for now
               }} 
               locale={locale} 
             />
