@@ -9,7 +9,7 @@ datasource db {
 }
 
 
-model course {
+model Course {
   id          Int      @id @default(autoincrement())
   title       String
   description String
@@ -17,5 +17,7 @@ model course {
   image       String?
   videoUrl    String?
   createdAt   DateTime @default(now())
+
+  @@map("courses") // This tells Prisma to use "courses" table name
 }
 
