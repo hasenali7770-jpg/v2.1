@@ -4,10 +4,9 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL_UNPOOLED")
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")  // Required for Supabase migrations
 }
-
 
 model Course {
   id          Int      @id @default(autoincrement())
@@ -18,6 +17,5 @@ model Course {
   videoUrl    String?
   createdAt   DateTime @default(now())
 
-  @@map("courses") // This tells Prisma to use "courses" table name
+  @@map("courses")
 }
-
