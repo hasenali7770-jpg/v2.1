@@ -6,7 +6,6 @@ import { Locale, isLocale, t } from "@/lib/i18n";
 import { CourseCard } from "@/components/CourseCard";
 import { useParams } from "next/navigation";
 
-// Define the Course type matching your database
 interface Course {
   id: number;
   title: string;
@@ -33,16 +32,29 @@ export default function CoursesPage() {
   // Fetch courses from database
   useEffect(() => {
     const fetchCourses = async () => {
+      console.log("📥 Fetching courses for locale:", locale);
+      
       try {
         setLoading(true);
-        const response = await fetch(`/${locale}/api/courses`);
+        const apiUrl = `/${locale}/api/courses`;
+        console.log("🔗 API URL:", apiUrl);
+        
+        const response = await fetch(apiUrl);
+        console.log("📊 Response status:", response.status);
+        
         if (!response.ok) {
-          throw new Error('Failed to fetch courses');
+          const errorText = await response.text();
+          console.error("❌ Error response:", errorText);
+          throw new Error(`Failed to fetch courses: ${response.status}`);
         }
+        
         const data = await response.json();
+        console.log("✅ Courses fetched:", data);
+        console.log("📦 Number of courses:", data.length);
+        
         setCourses(data);
       } catch (err) {
-        console.error("Error fetching courses:", err);
+        console.error("🔥 Fetch error:", err);
         setError("فشل في تحميل الدورات");
       } finally {
         setLoading(false);
@@ -52,26 +64,26 @@ export default function CoursesPage() {
     fetchCourses();
   }, [locale]);
 
-  // Extract unique tags from courses (for now empty, can be extended later)
   const allTags = useMemo(() => {
     const set = new Set<string>();
-    // If you add tags to your schema later, you can populate this
     return Array.from(set);
   }, []);
 
-  // Filter and sort courses
   const filtered = useMemo(() => {
+    console.log("🔍 Filtering courses. Total:", courses.length);
     const query = q.trim().toLowerCase();
     const list = courses
       .filter((course) => {
         const title = course.title.toLowerCase();
         const description = course.description.toLowerCase();
         const matchQ = !query || title.includes(query) || description.includes(query);
-        const matchTag = !tag; // No tag filtering for now
+        const matchTag = !tag;
         return matchQ && matchTag;
       })
       .slice()
       .sort((a, b) => (sort === "asc" ? a.price - b.price : b.price - a.price));
+    
+    console.log("✨ Filtered courses:", list.length);
     return list;
   }, [courses, q, tag, sort]);
 
@@ -178,7 +190,7 @@ export default function CoursesPage() {
                 description: { [locale]: course.description },
                 priceIQD: course.price,
                 image: course.image || '/placeholder-course.jpg',
-                tags: { [locale]: [] } // Empty tags for now
+                tags: { [locale]: [] }
               }} 
               locale={locale} 
             />
