@@ -6,7 +6,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate --schema=./schema.prisma && prisma db push"
+    "postinstall": "prisma generate --schema=./schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
