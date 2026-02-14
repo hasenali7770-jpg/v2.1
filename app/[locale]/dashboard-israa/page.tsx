@@ -1,30 +1,30 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation"; // Add this import
+import { useParams } from "next/navigation";
 import { Container } from "@/components/Container";
 
 export default function AdminDashboard() {
   const [password, setPassword] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(""); // Add this for displaying errors
   
-  // Get the current locale from the URL
   const params = useParams();
   const locale = params.locale || 'en';
 
-  // 1. دالة حماية اللوحة
   const handleLogin = () => {
     if (password === "israa2026") {
       setIsAuthorized(true);
+      setErrorMessage("");
     } else {
       alert("كلمة السر خاطئة يا بطل!");
     }
   };
 
-  // 2. دالة إرسال الكورس الجديد لقاعدة البيانات
   const handleAddCourse = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage("");
 
     const formData = new FormData(e.currentTarget);
     const courseData = {
@@ -35,31 +35,49 @@ export default function AdminDashboard() {
       image: "/placeholder.png",
     };
 
+    console.log("📤 Sending data:", courseData); // Log the data being sent
+
     try {
-      // ✅ FIXED: Include locale in the API URL
       const response = await fetch(`/${locale}/api/courses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(courseData),
       });
 
+      console.log("📥 Response status:", response.status); // Log response status
+
+      // Try to get the response body
+      let responseData;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        responseData = await response.json();
+      } else {
+        responseData = await response.text();
+      }
+      
+      console.log("📦 Response data:", responseData);
+
       if (response.ok) {
         alert("تم نشر الكورس بنجاح في الأكاديمية! 🎉");
         (e.target as HTMLFormElement).reset();
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("API Error:", errorData);
-        alert("فشل النشر: " + (errorData.error || 'تأكد من إعدادات قاعدة البيانات'));
+        // Show detailed error
+        const errorMsg = typeof responseData === 'string' 
+          ? responseData 
+          : responseData.error || 'فشل النشر، تأكد من إعدادات قاعدة البيانات';
+        
+        setErrorMessage(errorMsg);
+        alert(`خطأ: ${errorMsg}`);
       }
     } catch (error) {
-      console.error("Error adding course:", error);
-      alert("حدث خطأ في الاتصال بالسيرفر.");
+      console.error("🔥 Network/Parse Error:", error);
+      setErrorMessage(error instanceof Error ? error.message : 'حدث خطأ في الاتصال');
+      alert("حدث خطأ في الاتصال بالسيرفر: " + (error instanceof Error ? error.message : 'خطأ غير معروف'));
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Rest of your component remains the same...
   if (!isAuthorized) {
     return (
       <Container className="py-20 flex flex-col items-center">
@@ -80,6 +98,12 @@ export default function AdminDashboard() {
   return (
     <Container className="py-14">
       <h1 className="text-3xl font-bold mb-8 text-ink dark:text-night-text">إدارة الأكاديمية 🚀</h1>
+      
+      {errorMessage && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+          <strong>خطأ:</strong> {errorMessage}
+        </div>
+      )}
       
       <div className="grid gap-8 md:grid-cols-2">
         {/* نموذج إضافة كورس جديد */}
