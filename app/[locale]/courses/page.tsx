@@ -20,17 +20,18 @@ interface DBCourse {
 export default function CoursesPage() {
   const params = useParams();
   
-  // FIX: Handle locale properly (params.locale could be string or string[])
-  const localeParam = params.locale;
-  let localeValue = "ar"; // default
+  // Safe extraction of locale
+  let localeParam: string = "ar";
   
-  if (typeof localeParam === 'string') {
-    localeValue = localeParam;
-  } else if (Array.isArray(localeParam) && localeParam.length > 0) {
-    localeValue = localeParam[0];
+  if (params.locale) {
+    if (typeof params.locale === 'string') {
+      localeParam = params.locale;
+    } else if (Array.isArray(params.locale) && params.locale.length > 0) {
+      localeParam = params.locale[0];
+    }
   }
   
-  const locale = (isLocale(localeValue) ? localeValue : "ar") as Locale;
+  const locale = (isLocale(localeParam) ? localeParam : "ar") as Locale;
   const tr = t(locale);
 
   const [courses, setCourses] = useState<DBCourse[]>([]);
