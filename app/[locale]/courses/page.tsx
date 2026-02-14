@@ -1,39 +1,98 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Container } from "@/components/Container";
 import { Locale, isLocale, t } from "@/lib/i18n";
-import { courses } from "@/lib/courses";
 import { CourseCard } from "@/components/CourseCard";
+import { useParams } from "next/navigation";
 
-export default function CoursesPage({ params }: { params: { locale: string } }) {
+// Define the Course type
+interface Course {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  image: string | null;
+  videoUrl: string | null;
+  createdAt: string;
+}
+
+export default function CoursesPage() {
+  const params = useParams();
   const locale = (isLocale(params.locale) ? params.locale : "ar") as Locale;
   const tr = t(locale);
 
-  const allTags = useMemo(() => {
-    const set = new Set<string>();
-    courses.forEach((c) => c.tags[locale].forEach((tag) => set.add(tag)));
-    return Array.from(set);
-  }, [locale]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [q, setQ] = useState("");
   const [tag, setTag] = useState<string | null>(null);
   const [sort, setSort] = useState<"asc" | "desc">("asc");
 
+  // Fetch courses from database
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/${locale}/api/courses`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch courses');
+        }
+        const data = await response.json();
+        setCourses(data);
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+        setError("فشل في تحميل الدورات");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [locale]);
+
+  // Extract unique tags from courses (you might want to add tags to your schema)
+  const allTags = useMemo(() => {
+    // For now, return empty array or you can extract from course data
+    // If you add tags to your schema later, update this
+    return [];
+  }, [courses]);
+
+  // Filter and sort courses
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-    const list = courses
-      .filter((c) => {
-        const title = c.title[locale].toLowerCase();
-        const short = c.short[locale].toLowerCase();
-        const matchQ = !query || title.includes(query) || short.includes(query);
-        const matchTag = !tag || c.tags[locale].includes(tag);
-        return matchQ && matchTag;
+    return courses
+      .filter((course) => {
+        const title = course.title.toLowerCase();
+        const description = course.description.toLowerCase();
+        const matchQ = !query || title.includes(query) || description.includes(query);
+        // Add tag filtering later when you add tags to schema
+        return matchQ;
       })
       .slice()
-      .sort((a, b) => (sort === "asc" ? a.priceIQD - b.priceIQD : b.priceIQD - a.priceIQD));
-    return list;
-  }, [q, tag, sort, locale]);
+      .sort((a, b) => (sort === "asc" ? a.price - b.price : b.price - a.price));
+  }, [courses, q, sort]);
+
+  if (loading) {
+    return (
+      <Container className="py-10">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <p className="text-muted">جاري التحميل...</p>
+        </div>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container className="py-10">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container className="py-10">
@@ -73,43 +132,24 @@ export default function CoursesPage({ params }: { params: { locale: string } }) 
         </div>
       </div>
 
-      <div className="mb-6 rounded-3xl border border-stroke bg-white p-5 shadow-soft dark:border-night-stroke dark:bg-night-surface">
-        <div className="text-sm font-semibold text-ink dark:text-night-text">{tr.coursesPage.filter}</div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            onClick={() => setTag(null)}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-              tag === null
-                ? "bg-brand text-white"
-                : "bg-bg text-ink hover:opacity-90 dark:bg-night-bg dark:text-night-text"
-            }`}
-          >
-            {locale === "ar" ? "الكل" : "All"}
-          </button>
-          {allTags.map((tTag) => (
-            <button
-              key={tTag}
-              onClick={() => setTag(tTag)}
-              className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-                tag === tTag
-                  ? "bg-brand text-white"
-                  : "bg-bg text-ink hover:opacity-90 dark:bg-night-bg dark:text-night-text"
-              }`}
-            >
-              {tTag}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {filtered.length === 0 ? (
         <div className="rounded-3xl border border-stroke bg-white p-6 text-sm text-muted shadow-soft dark:border-night-stroke dark:bg-night-surface dark:text-night-muted">
           {tr.coursesPage.empty}
         </div>
       ) : (
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((c) => (
-            <CourseCard key={c.slug} course={c} locale={locale} />
+          {filtered.map((course) => (
+            <CourseCard 
+              key={course.id} 
+              course={{
+                ...course,
+                // Add any missing fields that CourseCard expects
+                slug: course.id.toString(), // Use id as slug temporarily
+                short: course.description.substring(0, 100), // Truncate description for short
+                tags: { en: [], ar: [] } // Empty tags for now
+              }} 
+              locale={locale} 
+            />
           ))}
         </div>
       )}
