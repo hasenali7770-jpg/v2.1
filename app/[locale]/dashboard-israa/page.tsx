@@ -1,11 +1,16 @@
 "use client";
 import { useState } from "react";
+import { useParams } from "next/navigation"; // Add this import
 import { Container } from "@/components/Container";
 
 export default function AdminDashboard() {
   const [password, setPassword] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Get the current locale from the URL
+  const params = useParams();
+  const locale = params.locale || 'en';
 
   // 1. دالة حماية اللوحة
   const handleLogin = () => {
@@ -27,11 +32,12 @@ export default function AdminDashboard() {
       description: formData.get("description"),
       price: formData.get("price"),
       videoUrl: formData.get("videoUrl"),
-      image: "/placeholder.png", // سنقوم بتفعيل رفع الصور في الخطوات القادمة
+      image: "/placeholder.png",
     };
 
     try {
-      const response = await fetch('/api/courses', {
+      // ✅ FIXED: Include locale in the API URL
+      const response = await fetch(`/${locale}/api/courses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(courseData),
@@ -39,9 +45,11 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         alert("تم نشر الكورس بنجاح في الأكاديمية! 🎉");
-        (e.target as HTMLFormElement).reset(); // تفريغ الحقول بعد النجاح
+        (e.target as HTMLFormElement).reset();
       } else {
-        alert("فشل النشر، تأكد من إعدادات قاعدة البيانات.");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API Error:", errorData);
+        alert("فشل النشر: " + (errorData.error || 'تأكد من إعدادات قاعدة البيانات'));
       }
     } catch (error) {
       console.error("Error adding course:", error);
@@ -51,6 +59,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Rest of your component remains the same...
   if (!isAuthorized) {
     return (
       <Container className="py-20 flex flex-col items-center">
@@ -73,7 +82,7 @@ export default function AdminDashboard() {
       <h1 className="text-3xl font-bold mb-8 text-ink dark:text-night-text">إدارة الأكاديمية 🚀</h1>
       
       <div className="grid gap-8 md:grid-cols-2">
-        {/* نموذج إضافة كورس جديد (تم تحديثه) */}
+        {/* نموذج إضافة كورس جديد */}
         <div className="bg-white dark:bg-night-surface p-8 rounded-[2rem] border border-stroke shadow-soft">
           <h2 className="text-xl font-semibold mb-6">إنشاء كورس جديد</h2>
           <form className="space-y-4" onSubmit={handleAddCourse}>
