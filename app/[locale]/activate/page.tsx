@@ -3,7 +3,9 @@ import { useState } from "react";
 import { Container } from "@/components/Container";
 import { Locale, isLocale, t } from "@/lib/i18n";
 
-function looksLikeCode(code: string) { return /^ALN-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test(code.trim()); }
+function looksLikeCode(code: string) { 
+  return /^ALN-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test(code.trim()); 
+}
 
 export default function ActivatePage({ params }: { params: { locale: string } }) {
   const locale = (isLocale(params.locale) ? params.locale : "ar") as Locale;
@@ -18,17 +20,31 @@ export default function ActivatePage({ params }: { params: { locale: string } })
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-3xl border border-stroke bg-white p-7 shadow-soft dark:border-night-stroke dark:bg-night-surface">
-          <label className="text-sm font-semibold">{tr.activation.label}</label>
-          <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="ALN-1A2B-3C4D"
-            className="mt-2 w-full rounded-2xl border border-stroke bg-sand-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-walnut-500 dark:border-night-stroke dark:bg-brand" />
-          <button onClick={() => {
-              if (!looksLikeCode(code)) { setMsg(locale==="ar" ? "الكود غير صحيح. مثال: ALN-1A2B-3C4D" : "Invalid code. Example: ALN-1A2B-3C4D"); return; }
-              setMsg(tr.activation.success);
+          {/* ✅ التصحيح: استخدام tr.activation.form.label بدلاً من tr.activation.label */}
+          <label className="text-sm font-semibold">{tr.activation.form.label}</label>
+          
+          <input 
+            value={code} 
+            onChange={(e) => setCode(e.target.value.toUpperCase())} 
+            placeholder="ALN-1A2B-3C4D"
+            className="mt-2 w-full rounded-2xl border border-stroke bg-sand-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-walnut-500 dark:border-night-stroke dark:bg-brand" 
+          />
+          
+          <button 
+            onClick={() => {
+              if (!looksLikeCode(code)) { 
+                setMsg(locale==="ar" ? "الكود غير صحيح. مثال: ALN-1A2B-3C4D" : "Invalid code. Example: ALN-1A2B-3C4D"); 
+                return; 
+              }
+              setMsg(tr.activation.form.success);
             }}
-            className="mt-4 rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-sand-50 dark:bg-bg dark:text-ink">
-            {tr.activation.button}
+            className="mt-4 rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-sand-50 dark:bg-bg dark:text-ink"
+          >
+            {tr.activation.form.button}
           </button>
+          
           {msg && <div className="mt-4 rounded-2xl bg-bg p-4 text-sm text-ink dark:bg-walnut-800 dark:text-sand-50">{msg}</div>}
+          
           <div className="mt-4 text-xs leading-6 text-walnut-600 dark:text-sand-300">{tr.activation.hint}</div>
         </div>
 
