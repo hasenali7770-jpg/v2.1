@@ -3,7 +3,20 @@ import { Container } from "@/components/Container";
 import { Locale, isLocale, t, formatCurrency } from "@/lib/i18n";
 import { courses } from "@/lib/courses";
 import Link from "next/link";
-import { ArrowLeft, Clock, Users, BookOpen, Award, PlayCircle } from "lucide-react";
+import { ArrowLeft, Clock, Users, BookOpen, Award } from "lucide-react";
+
+type CourseTr = {
+  brand: { name: string };
+  courses: {
+    details: {
+      duration: string;
+      hours: string;
+      videos: string;
+      certificate: string;
+    };
+    actions: { buy: string };
+  };
+};
 
 export default function CoursePage({
   params,
@@ -11,19 +24,26 @@ export default function CoursePage({
   params: { locale: string; slug: string };
 }) {
   const locale = (isLocale(params.locale) ? params.locale : "ar") as Locale;
-  const tr = t(locale);
-  
+
+  // ✅ cast + fallback حتى لا يطيح build لو مفتاح ناقص بأي ترجمة
+  const trRaw = t(locale) as unknown as Partial<CourseTr>;
+
   const course = courses.find((c) => c.slug === params.slug);
-  
-  if (!course) {
-    notFound();
-  }
+  if (!course) notFound();
+
+  const durationLabel = trRaw.courses?.details?.duration ?? (locale === "ar" ? "المدة" : "Duration");
+  const hoursLabel = trRaw.courses?.details?.hours ?? (locale === "ar" ? "ساعات" : "hours");
+  const videosLabel = trRaw.courses?.details?.videos ?? (locale === "ar" ? "فيديو" : "videos");
+  const certificateLabel =
+    trRaw.courses?.details?.certificate ?? (locale === "ar" ? "شهادة" : "Certificate");
+  const buyLabel = trRaw.courses?.actions?.buy ?? (locale === "ar" ? "اشترك الآن" : "Buy now");
+  const brandName = trRaw.brand?.name ?? (locale === "ar" ? "إسراء النور" : "Israa Alnoor");
 
   const features = [
-    { icon: Clock, text: `${course.hoursMin}+ ${tr.courses.details.hours}` },
+    { icon: Clock, text: `${course.hoursMin}+ ${hoursLabel}` },
     { icon: Users, text: locale === "ar" ? "٢٥٠+ طالب" : "250+ students" },
-    { icon: BookOpen, text: `${course.hoursMin * 3}+ ${tr.courses.details.videos}` },
-    { icon: Award, text: tr.courses.details.certificate },
+    { icon: BookOpen, text: `${course.hoursMin * 3}+ ${videosLabel}` },
+    { icon: Award, text: certificateLabel },
   ];
 
   return (
@@ -58,33 +78,29 @@ export default function CoursePage({
 
         <aside className="space-y-4">
           <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
-            {/* CORRECT - Using courses.details.duration */}
-            <div className="text-sm text-muted dark:text-night-muted">
-              {tr.courses.details.duration}
-            </div>
+            <div className="text-sm text-muted dark:text-night-muted">{durationLabel}</div>
+
             <div className="mt-1 text-lg font-semibold text-ink dark:text-night-text">
-              {course.hoursMin}+ {tr.courses.details.hours}
+              {course.hoursMin}+ {hoursLabel}
             </div>
-            
+
             <div className="mt-4 text-sm text-muted dark:text-night-muted">
               {locale === "ar" ? "السعر" : "Price"}
             </div>
-            {/* CORRECT - Using formatCurrency */}
+
             <div className="mt-1 text-2xl font-semibold text-ink dark:text-night-text">
               {formatCurrency(locale, course.priceIQD)}
             </div>
 
             <button className="mt-6 w-full rounded-2xl bg-brand py-3 font-bold text-white transition hover:opacity-90">
-              {tr.courses.actions.buy}
+              {buyLabel}
             </button>
 
             <div className="mt-6 space-y-3">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center gap-3 text-sm">
                   <feature.icon className="h-4 w-4 text-brand" />
-                  <span className="text-muted dark:text-night-muted">
-                    {feature.text}
-                  </span>
+                  <span className="text-muted dark:text-night-muted">{feature.text}</span>
                 </div>
               ))}
             </div>
@@ -97,9 +113,7 @@ export default function CoursePage({
             <div className="mt-4 flex items-center gap-3">
               <div className="h-12 w-12 rounded-full bg-brand/20"></div>
               <div>
-                <div className="font-medium text-ink dark:text-night-text">
-                  {tr.brand.name}
-                </div>
+                <div className="font-medium text-ink dark:text-night-text">{brandName}</div>
                 <div className="text-xs text-muted dark:text-night-muted">
                   {locale === "ar" ? "مؤسسة الأكاديمية" : "Academy Founder"}
                 </div>
