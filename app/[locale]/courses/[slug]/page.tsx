@@ -1,139 +1,205 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useMemo, useState, useEffect } from "react";
 import { Container } from "@/components/Container";
-import { Locale, isLocale, t, formatCurrency } from "@/lib/i18n";
-import { courses } from "@/lib/courses";
-import Link from "next/link";
-import { ArrowLeft, Clock, Users, BookOpen, Award } from "lucide-react";
+import { Locale, isLocale, t } from "@/lib/i18n";
+import { courses as localCourses } from "@/lib/courses";
+import { CourseCard } from "@/components/CourseCard";
+import { useParams } from "next/navigation";
 
-type CourseTr = {
-  brand: { name: string };
-  courses: {
-    details: {
-      duration: string;
-      hours: string;
-      videos: string;
-      certificate: string;
+// Database course type
+interface DBCourse {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  image: string | null;
+  videoUrl: string | null;
+  createdAt: string;
+}
+
+export default function CoursesPage() {
+  const params = useParams();
+  const localeParam = params.locale;
+  const localeValue = Array.isArray(localeParam) ? localeParam[0] : localeParam || "ar";
+  const locale = (isLocale(localeValue) ? localeValue : "ar") as Locale;
+  
+  // Use the new structure - tr.courses instead of tr.coursesPage
+  const tr = t(locale).courses;
+
+  const [dbCourses, setDbCourses] = useState<DBCourse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [q, setQ] = useState("");
+  const [tag, setTag] = useState<string | null>(null);
+  const [sort, setSort] = useState<"asc" | "desc">("asc");
+
+  // Fetch courses from database
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/${locale}/api/courses`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch courses');
+        }
+        const data = await response.json();
+        setDbCourses(data);
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+        setError("فشل في تحميل الدورات");
+      } finally {
+        setLoading(false);
+      }
     };
-    actions: { buy: string };
-  };
-};
 
-export default function CoursePage({
-  params,
-}: {
-  params: { locale: string; slug: string };
-}) {
-  const locale = (isLocale(params.locale) ? params.locale : "ar") as Locale;
+    fetchCourses();
+  }, [locale]);
 
-  const trRaw = t(locale) as unknown as Partial<CourseTr>;
+  // Convert database courses to match CourseCard format
+  const dbTransformed = useMemo(() => {
+    return dbCourses.map(course => ({
+      slug: `db-${course.id}`,
+      cover: course.image || '/course-covers/default.svg',
+      title: { ar: course.title, en: course.title },
+      short: { 
+        ar: course.description.substring(0, 100) + (course.description.length > 100 ? '...' : ''), 
+        en: course.description.substring(0, 100) + (course.description.length > 100 ? '...' : '')
+      },
+      priceIQD: course.price,
+      hoursMin: 10,
+      tags: { ar: [], en: [] }
+    }));
+  }, [dbCourses]);
 
-  const course = courses.find((c) => c.slug === params.slug);
-  if (!course) notFound();
+  // Combine local and database courses
+  const allCourses = useMemo(() => {
+    return [...localCourses, ...dbTransformed];
+  }, [localCourses, dbTransformed]);
 
-  const durationLabel = trRaw.courses?.details?.duration ?? (locale === "ar" ? "المدة" : "Duration");
-  const hoursLabel = trRaw.courses?.details?.hours ?? (locale === "ar" ? "ساعات" : "hours");
-  const videosLabel = trRaw.courses?.details?.videos ?? (locale === "ar" ? "فيديو" : "videos");
-  const certificateLabel =
-    trRaw.courses?.details?.certificate ?? (locale === "ar" ? "شهادة" : "Certificate");
-  const buyLabel = trRaw.courses?.actions?.buy ?? (locale === "ar" ? "اشترك الآن" : "Buy now");
-  const brandName = trRaw.brand?.name ?? (locale === "ar" ? "إسراء النور" : "Israa Alnoor");
+  // Extract unique tags from local courses only
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    localCourses.forEach((c) => c.tags[locale].forEach((tag) => set.add(tag)));
+    return Array.from(set);
+  }, [locale]);
 
-  const features = [
-    { icon: Clock, text: `${course.hoursMin}+ ${hoursLabel}` },
-    { icon: Users, text: locale === "ar" ? "٢٥٠+ طالب" : "250+ students" },
-    { icon: BookOpen, text: `${course.hoursMin * 3}+ ${videosLabel}` },
-    { icon: Award, text: certificateLabel },
-  ];
+  // Filter and sort courses
+  const filtered = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    const list = allCourses
+      .filter((c) => {
+        const title = c.title[locale].toLowerCase();
+        const short = c.short[locale].toLowerCase();
+        const matchQ = !query || title.includes(query) || short.includes(query);
+        const matchTag = !tag || c.tags[locale].includes(tag);
+        return matchQ && matchTag;
+      })
+      .slice()
+      .sort((a, b) => (sort === "asc" ? a.priceIQD - b.priceIQD : b.priceIQD - a.priceIQD));
+    return list;
+  }, [allCourses, q, tag, sort, locale]);
+
+  if (loading) {
+    return (
+      <Container className="py-10">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <p className="text-muted dark:text-night-muted">جاري التحميل...</p>
+        </div>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container className="py-10">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container className="py-10">
-      <Link
-        href={`/${locale}/courses`}
-        className="mb-6 inline-flex items-center gap-2 text-sm text-muted hover:text-brand dark:text-night-muted"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {locale === "ar" ? "العودة إلى الدورات" : "Back to courses"}
-      </Link>
-
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="aspect-[1200/630] w-full overflow-hidden rounded-3xl border border-stroke bg-gradient-to-br from-brand/5 to-accent/5 dark:border-night-stroke">
-            <img
-              src={course.cover}
-              alt={course.title[locale]}
-              className="h-full w-full object-cover"
-            />
-          </div>
-
-          <div className="mt-6">
-            <h1 className="text-3xl font-bold text-ink dark:text-night-text">
-              {course.title[locale]}
-            </h1>
-            {/* IMPORTANT: Using short, NOT description */}
-            <p className="mt-4 text-lg leading-relaxed text-muted dark:text-night-muted">
-              {course.short[locale]}
-            </p>
-          </div>
-        </div>
-
-        <aside className="space-y-4">
-          <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
-            <div className="text-sm text-muted dark:text-night-muted">{durationLabel}</div>
-            <div className="mt-1 text-lg font-semibold text-ink dark:text-night-text">
-              {course.hoursMin}+ {hoursLabel}
-            </div>
-            <div className="mt-4 text-sm text-muted dark:text-night-muted">
-              {locale === "ar" ? "السعر" : "Price"}
-            </div>
-            <div className="mt-1 text-2xl font-semibold text-ink dark:text-night-text">
-              {formatCurrency(locale, course.priceIQD)}
-            </div>
-            <button className="mt-6 w-full rounded-2xl bg-brand py-3 font-bold text-white transition hover:opacity-90">
-              {buyLabel}
-            </button>
-            <div className="mt-6 space-y-3">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-3 text-sm">
-                  <feature.icon className="h-4 w-4 text-brand" />
-                  <span className="text-muted dark:text-night-muted">{feature.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
-            <h3 className="font-semibold text-ink dark:text-night-text">
-              {locale === "ar" ? "المدرب" : "Instructor"}
-            </h3>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-brand/20"></div>
-              <div>
-                <div className="font-medium text-ink dark:text-night-text">{brandName}</div>
-                <div className="text-xs text-muted dark:text-night-muted">
-                  {locale === "ar" ? "مؤسسة الأكاديمية" : "Academy Founder"}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
-            <h3 className="font-semibold text-ink dark:text-night-text">
-              {locale === "ar" ? "الوسوم" : "Tags"}
-            </h3>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {course.tags[locale].map((tag) => (
-                <Link
-                  key={tag}
-                  href={`/${locale}/courses?tag=${tag}`}
-                  className="rounded-full bg-bg px-3 py-1 text-xs text-ink transition hover:bg-brand hover:text-white dark:bg-night-bg dark:text-night-text"
-                >
-                  {tag}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </aside>
+      {/* Using tr.title and tr.subtitle (from tr.courses) instead of tr.coursesPage.title */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-ink dark:text-night-text">{tr.title}</h1>
+        <p className="mt-2 text-sm leading-7 text-muted dark:text-night-muted">{tr.subtitle}</p>
       </div>
+
+      <div className="mb-6 grid gap-3 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={tr.search}
+            className="w-full rounded-2xl border border-stroke bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand/20 dark:border-night-stroke dark:bg-night-surface dark:text-night-text"
+          />
+        </div>
+        <div className="flex gap-3">
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as any)}
+            className="w-full rounded-2xl border border-stroke bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand/20 dark:border-night-stroke dark:bg-night-surface dark:text-night-text"
+          >
+            <option value="asc">{tr.sortPriceAsc}</option>
+            <option value="desc">{tr.sortPriceDesc}</option>
+          </select>
+          <button
+            onClick={() => {
+              setQ("");
+              setTag(null);
+              setSort("asc");
+            }}
+            className="shrink-0 rounded-2xl bg-bg px-4 py-3 text-sm font-semibold text-ink transition hover:opacity-90 dark:bg-night-bg dark:text-night-text"
+          >
+            {tr.clear}
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-6 rounded-3xl border border-stroke bg-white p-5 shadow-soft dark:border-night-stroke dark:bg-night-surface">
+        <div className="text-sm font-semibold text-ink dark:text-night-text">{tr.filter}</div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            onClick={() => setTag(null)}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+              tag === null
+                ? "bg-brand text-white"
+                : "bg-bg text-ink hover:opacity-90 dark:bg-night-bg dark:text-night-text"
+            }`}
+          >
+            {locale === "ar" ? "الكل" : "All"}
+          </button>
+          {allTags.map((tTag) => (
+            <button
+              key={tTag}
+              onClick={() => setTag(tTag)}
+              className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                tag === tTag
+                  ? "bg-brand text-white"
+                  : "bg-bg text-ink hover:opacity-90 dark:bg-night-bg dark:text-night-text"
+              }`}
+            >
+              {tTag}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="rounded-3xl border border-stroke bg-white p-6 text-sm text-muted shadow-soft dark:border-night-stroke dark:bg-night-surface dark:text-night-muted">
+          {tr.empty}
+        </div>
+      ) : (
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((c) => (
+            <CourseCard key={c.slug} course={c} locale={locale} />
+          ))}
+        </div>
+      )}
     </Container>
   );
 }
