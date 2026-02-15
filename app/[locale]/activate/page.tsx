@@ -39,7 +39,7 @@ export default function ActivatePage({ params }: { params: { locale: string } })
 
       <div className="mx-auto mt-10 max-w-md">
         <div className="rounded-3xl border border-stroke bg-white p-8 shadow-soft dark:border-night-stroke dark:bg-night-surface">
-          {/* FIXED: Use form.label instead of label */}
+          {/* IMPORTANT: Using form.label (not label) */}
           <label className="text-sm font-semibold text-ink dark:text-night-text">
             {tr.activation.form.label}
           </label>
@@ -52,7 +52,7 @@ export default function ActivatePage({ params }: { params: { locale: string } })
             disabled={status === "loading"}
           />
           
-          {/* FIXED: Use form.button instead of button */}
+          {/* IMPORTANT: Using form.button (not button) */}
           <button 
             onClick={handleActivate}
             disabled={status === "loading"}
