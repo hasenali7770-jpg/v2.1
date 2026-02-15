@@ -69,7 +69,7 @@ export default function CoursePage({
             <h1 className="text-3xl font-bold text-ink dark:text-night-text">
               {course.title[locale]}
             </h1>
-            {/* FIXED: Using short instead of description */}
+            {/* IMPORTANT: Using short, NOT description */}
             <p className="mt-4 text-lg leading-relaxed text-muted dark:text-night-muted">
               {course.short[locale]}
             </p>
@@ -79,23 +79,18 @@ export default function CoursePage({
         <aside className="space-y-4">
           <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
             <div className="text-sm text-muted dark:text-night-muted">{durationLabel}</div>
-
             <div className="mt-1 text-lg font-semibold text-ink dark:text-night-text">
               {course.hoursMin}+ {hoursLabel}
             </div>
-
             <div className="mt-4 text-sm text-muted dark:text-night-muted">
               {locale === "ar" ? "السعر" : "Price"}
             </div>
-
             <div className="mt-1 text-2xl font-semibold text-ink dark:text-night-text">
               {formatCurrency(locale, course.priceIQD)}
             </div>
-
             <button className="mt-6 w-full rounded-2xl bg-brand py-3 font-bold text-white transition hover:opacity-90">
               {buyLabel}
             </button>
-
             <div className="mt-6 space-y-3">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center gap-3 text-sm">
