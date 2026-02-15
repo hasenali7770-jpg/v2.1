@@ -3,7 +3,7 @@ import { Container } from "@/components/Container";
 import { Locale, isLocale, t, formatCurrency } from "@/lib/i18n";
 import { courses } from "@/lib/courses";
 import Link from "next/link";
-import { ArrowLeft, Clock, Tag, Star, Users, BookOpen, Award, PlayCircle } from "lucide-react";
+import { ArrowLeft, Clock, Users, BookOpen, Award, PlayCircle } from "lucide-react";
 
 export default function CoursePage({
   params,
@@ -12,12 +12,17 @@ export default function CoursePage({
 }) {
   const locale = (isLocale(params.locale) ? params.locale : "ar") as Locale;
   const tr = t(locale);
-  
+
   const course = courses.find((c) => c.slug === params.slug);
-  
+
   if (!course) {
     notFound();
   }
+
+  // ✅ Safe duration label (no TS error even if translation key is missing in one locale)
+  const durationLabel =
+    ((tr as unknown as { courses?: { details?: { duration?: string } } })?.courses?.details
+      ?.duration) ?? (locale === "ar" ? "المدة" : "Duration");
 
   // Mock features for the course
   const features = [
@@ -29,7 +34,6 @@ export default function CoursePage({
 
   return (
     <Container className="py-10">
-      {/* Back button */}
       <Link
         href={`/${locale}/courses`}
         className="mb-6 inline-flex items-center gap-2 text-sm text-muted hover:text-brand dark:text-night-muted"
@@ -39,9 +43,7 @@ export default function CoursePage({
       </Link>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Main content - Course details */}
         <div className="lg:col-span-2">
-          {/* Course image/cover */}
           <div className="aspect-[1200/630] w-full overflow-hidden rounded-3xl border border-stroke bg-gradient-to-br from-brand/5 to-accent/5 dark:border-night-stroke">
             <img
               src={course.cover}
@@ -50,7 +52,6 @@ export default function CoursePage({
             />
           </div>
 
-          {/* Course title and description */}
           <div className="mt-6">
             <h1 className="text-3xl font-bold text-ink dark:text-night-text">
               {course.title[locale]}
@@ -60,7 +61,6 @@ export default function CoursePage({
             </p>
           </div>
 
-          {/* What you'll learn */}
           <div className="mt-8">
             <h2 className="text-xl font-semibold text-ink dark:text-night-text">
               {locale === "ar" ? "ماذا ستتعلم؟" : "What you'll learn"}
@@ -79,7 +79,6 @@ export default function CoursePage({
             </div>
           </div>
 
-          {/* Course content / syllabus */}
           <div className="mt-8">
             <h2 className="text-xl font-semibold text-ink dark:text-night-text">
               {locale === "ar" ? "محتوى الدورة" : "Course content"}
@@ -105,18 +104,16 @@ export default function CoursePage({
           </div>
         </div>
 
-        {/* Sidebar - Course info and purchase */}
         <aside className="space-y-4">
           <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
-            {/* FIXED: Using tr.courses.details.duration */}
             <div className="text-sm text-muted dark:text-night-muted">
-              {tr.courses.details.duration}
+              {durationLabel}
             </div>
+
             <div className="mt-1 text-lg font-semibold text-ink dark:text-night-text">
               {course.hoursMin}+ {tr.courses.details.hours}
             </div>
-            
-            {/* Price */}
+
             <div className="mt-4 text-sm text-muted dark:text-night-muted">
               {locale === "ar" ? "السعر" : "Price"}
             </div>
@@ -124,12 +121,10 @@ export default function CoursePage({
               {formatCurrency(locale, course.priceIQD)}
             </div>
 
-            {/* Buy button */}
             <button className="mt-6 w-full rounded-2xl bg-brand py-3 font-bold text-white transition hover:opacity-90">
               {tr.courses.actions.buy}
             </button>
 
-            {/* Features list */}
             <div className="mt-6 space-y-3">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center gap-3 text-sm">
@@ -142,7 +137,6 @@ export default function CoursePage({
             </div>
           </div>
 
-          {/* Instructor info */}
           <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
             <h3 className="font-semibold text-ink dark:text-night-text">
               {locale === "ar" ? "المدرب" : "Instructor"}
@@ -165,7 +159,6 @@ export default function CoursePage({
             </p>
           </div>
 
-          {/* Tags */}
           <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
             <h3 className="font-semibold text-ink dark:text-night-text">
               {locale === "ar" ? "الوسوم" : "Tags"}
