@@ -25,7 +25,6 @@ export default function CoursePage({
 }) {
   const locale = (isLocale(params.locale) ? params.locale : "ar") as Locale;
 
-  // ✅ cast + fallback حتى لا يطيح build لو مفتاح ناقص بأي ترجمة
   const trRaw = t(locale) as unknown as Partial<CourseTr>;
 
   const course = courses.find((c) => c.slug === params.slug);
@@ -70,7 +69,7 @@ export default function CoursePage({
             <h1 className="text-3xl font-bold text-ink dark:text-night-text">
               {course.title[locale]}
             </h1>
-            {/* FIXED: Use short instead of description */}
+            {/* FIXED: Using short instead of description */}
             <p className="mt-4 text-lg leading-relaxed text-muted dark:text-night-muted">
               {course.short[locale]}
             </p>
