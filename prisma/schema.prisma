@@ -3,9 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")  // Required for Supabase connection pooler
 }
 
 model User {
@@ -52,8 +52,7 @@ model Course {
   createdAt   DateTime  @map("created_at") @default(now())
   updatedAt   DateTime  @map("updated_at") @updatedAt
 
-  // العلاقات المصححة
-  author      User?      @relation(fields: [authorId], references: [id])  // أضفنا علامة الاستفهام
+  author      User?      @relation(fields: [authorId], references: [id])
   sections    Section[]
   enrollments Enrollment[]
   comments    Comment[]
