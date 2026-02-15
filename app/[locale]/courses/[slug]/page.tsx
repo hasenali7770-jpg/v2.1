@@ -19,12 +19,6 @@ export default function CoursePage({
     notFound();
   }
 
-  // ✅ Safe duration label (no TS error even if translation key is missing in one locale)
-  const durationLabel =
-    ((tr as unknown as { courses?: { details?: { duration?: string } } })?.courses?.details
-      ?.duration) ?? (locale === "ar" ? "المدة" : "Duration");
-
-  // Mock features for the course
   const features = [
     { icon: Clock, text: `${course.hoursMin}+ ${tr.courses.details.hours}` },
     { icon: Users, text: locale === "ar" ? "٢٥٠+ طالب" : "250+ students" },
@@ -106,10 +100,12 @@ export default function CoursePage({
 
         <aside className="space-y-4">
           <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
+            {/* ✅ التعديل هنا */}
             <div className="text-sm text-muted dark:text-night-muted">
-              {durationLabel}
+              {tr.courses.details.duration}
             </div>
 
+            {/* ✅ والتعديل هنا */}
             <div className="mt-1 text-lg font-semibold text-ink dark:text-night-text">
               {course.hoursMin}+ {tr.courses.details.hours}
             </div>
