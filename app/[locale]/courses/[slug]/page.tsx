@@ -24,7 +24,7 @@ export default function CoursesPage() {
   const localeValue = Array.isArray(localeParam) ? localeParam[0] : localeParam || "ar";
   const locale = (isLocale(localeValue) ? localeValue : "ar") as Locale;
   
-  // ✅ FIXED: Use tr.courses instead of tr.coursesPage
+  // IMPORTANT: Using tr.courses (NOT tr.coursesPage)
   const tr = t(locale).courses;
 
   const [dbCourses, setDbCourses] = useState<DBCourse[]>([]);
@@ -53,7 +53,6 @@ export default function CoursesPage() {
         setLoading(false);
       }
     };
-
     fetchCourses();
   }, [locale]);
 
@@ -123,7 +122,7 @@ export default function CoursesPage() {
 
   return (
     <Container className="py-10">
-      {/* FIXED: Using tr.title instead of tr.coursesPage.title */}
+      {/* Using tr.title (from tr.courses) NOT tr.coursesPage.title */}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-ink dark:text-night-text">{tr.title}</h1>
         <p className="mt-2 text-sm leading-7 text-muted dark:text-night-muted">{tr.subtitle}</p>
