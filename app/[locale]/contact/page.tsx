@@ -19,7 +19,7 @@ export default function ContactPage({ params }: { params: { locale: string } }) 
   
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -28,9 +28,8 @@ export default function ContactPage({ params }: { params: { locale: string } }) 
     e.preventDefault();
     setStatus("loading");
     
-    // Simulate API call - replace with actual form submission
+    // Simulate API call
     setTimeout(() => {
-      // For demo purposes, always succeed
       setStatus("success");
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
     }, 1500);
@@ -178,7 +177,6 @@ export default function ContactPage({ params }: { params: { locale: string } }) 
             <div className="mt-4 flex flex-wrap gap-3">
               <a href="#" className="rounded-full bg-brand/10 p-3 text-brand hover:bg-brand hover:text-white transition">
                 <span className="sr-only">Facebook</span>
-                {/* Add your social icons here */}
                 FB
               </a>
               <a href="#" className="rounded-full bg-brand/10 p-3 text-brand hover:bg-brand hover:text-white transition">
