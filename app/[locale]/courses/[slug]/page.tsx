@@ -24,7 +24,7 @@ export default function CoursesPage() {
   const localeValue = Array.isArray(localeParam) ? localeParam[0] : localeParam || "ar";
   const locale = (isLocale(localeValue) ? localeValue : "ar") as Locale;
   
-  // Use the new structure - tr.courses instead of tr.coursesPage
+  // ✅ FIXED: Use tr.courses instead of tr.coursesPage
   const tr = t(locale).courses;
 
   const [dbCourses, setDbCourses] = useState<DBCourse[]>([]);
@@ -123,7 +123,7 @@ export default function CoursesPage() {
 
   return (
     <Container className="py-10">
-      {/* Using tr.title and tr.subtitle (from tr.courses) instead of tr.coursesPage.title */}
+      {/* FIXED: Using tr.title instead of tr.coursesPage.title */}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-ink dark:text-night-text">{tr.title}</h1>
         <p className="mt-2 text-sm leading-7 text-muted dark:text-night-muted">{tr.subtitle}</p>
