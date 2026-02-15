@@ -108,7 +108,7 @@ export default function CoursePage({
         {/* Sidebar - Course info and purchase */}
         <aside className="space-y-4">
           <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
-            {/* FIXED: Using courses.details.duration instead of duration */}
+            {/* FIXED: Using tr.courses.details.duration */}
             <div className="text-sm text-muted dark:text-night-muted">
               {tr.courses.details.duration}
             </div>
