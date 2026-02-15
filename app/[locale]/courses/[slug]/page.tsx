@@ -70,8 +70,9 @@ export default function CoursePage({
             <h1 className="text-3xl font-bold text-ink dark:text-night-text">
               {course.title[locale]}
             </h1>
+            {/* FIXED: Use short instead of description */}
             <p className="mt-4 text-lg leading-relaxed text-muted dark:text-night-muted">
-              {course.description?.[locale] || course.short[locale]}
+              {course.short[locale]}
             </p>
           </div>
         </div>
