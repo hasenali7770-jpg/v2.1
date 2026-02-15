@@ -52,7 +52,8 @@ model Course {
   createdAt   DateTime  @map("created_at") @default(now())
   updatedAt   DateTime  @map("updated_at") @updatedAt
 
-  author      User       @relation(fields: [authorId], references: [id])
+  // العلاقات
+  author      User?      @relation(fields: [authorId], references: [id])   // <-- هنا التعديل (أضفنا ?)
   sections    Section[]
   enrollments Enrollment[]
   comments    Comment[]
