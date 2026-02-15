@@ -19,6 +19,7 @@ model User {
   createdAt     DateTime  @map("created_at") @default(now())
   updatedAt     DateTime  @map("updated_at") @updatedAt
 
+  // Relations
   courses       Course[]
   enrollments   Enrollment[]
   comments      Comment[]
@@ -27,6 +28,7 @@ model User {
   notifications Notification[]
   payments      Payment[]
   activationCodes ActivationCode[]
+  ownedCourses  Course[]   @relation("CourseAuthor") // courses authored by user
 
   @@map("profiles")
 }
@@ -52,7 +54,8 @@ model Course {
   createdAt   DateTime  @map("created_at") @default(now())
   updatedAt   DateTime  @map("updated_at") @updatedAt
 
-  author      User       @relation(fields: [authorId], references: [id])
+  // Relations
+  author      User       @relation("CourseAuthor", fields: [authorId], references: [id])
   sections    Section[]
   enrollments Enrollment[]
   comments    Comment[]
@@ -72,7 +75,8 @@ model Section {
   createdAt   DateTime  @map("created_at") @default(now())
   updatedAt   DateTime  @map("updated_at") @updatedAt
 
-  course      Course    @relation(fields: [courseId], references: [id])
+  // Relations
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   lessons     Lesson[]
 
   @@map("sections")
@@ -90,8 +94,10 @@ model Lesson {
   createdAt   DateTime  @map("created_at") @default(now())
   updatedAt   DateTime  @map("updated_at") @updatedAt
 
-  section         Section           @relation(fields: [sectionId], references: [id])
+  // Relations
+  section         Section           @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   completedLessons CompletedLesson[]
+  comments        Comment[]
 
   @@map("lessons")
 }
@@ -107,8 +113,9 @@ model Enrollment {
   createdAt   DateTime  @map("created_at") @default(now())
   updatedAt   DateTime  @map("updated_at") @updatedAt
 
-  user            User              @relation(fields: [userId], references: [id])
-  course          Course            @relation(fields: [courseId], references: [id])
+  // Relations
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course          Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
   completedLessons CompletedLesson[]
   payments        Payment[]
 
@@ -123,9 +130,10 @@ model CompletedLesson {
   enrollmentId String   @map("enrollment_id") @db.Uuid
   completedAt  DateTime @map("completed_at") @default(now())
 
-  user       User       @relation(fields: [userId], references: [id])
-  lesson     Lesson     @relation(fields: [lessonId], references: [id])
-  enrollment Enrollment @relation(fields: [enrollmentId], references: [id])
+  // Relations
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson     Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
   @@map("completed_lessons")
@@ -143,11 +151,12 @@ model Comment {
   createdAt DateTime @map("created_at") @default(now())
   updatedAt DateTime @map("updated_at") @updatedAt
 
-  user     User       @relation(fields: [userId], references: [id])
-  course   Course?    @relation(fields: [courseId], references: [id])
-  lesson   Lesson?    @relation(fields: [lessonId], references: [id])
-  parent   Comment?   @relation("comment_replies", fields: [parentId], references: [id])
-  replies  Comment[]  @relation("comment_replies")
+  // Relations
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course?    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson   Lesson?    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  parent   Comment?   @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[]  @relation("CommentReplies")
   likesRel CommentLike[]
 
   @@map("comments")
@@ -159,8 +168,9 @@ model CommentLike {
   commentId String   @map("comment_id") @db.Uuid
   createdAt DateTime @map("created_at") @default(now())
 
-  user    User    @relation(fields: [userId], references: [id])
-  comment Comment @relation(fields: [commentId], references: [id])
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commentId])
   @@map("comment_likes")
@@ -175,8 +185,9 @@ model Review {
   createdAt DateTime @map("created_at") @default(now())
   updatedAt DateTime @map("updated_at") @updatedAt
 
-  user   User   @relation(fields: [userId], references: [id])
-  course Course @relation(fields: [courseId], references: [id])
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@map("reviews")
@@ -194,9 +205,10 @@ model Payment {
   createdAt     DateTime @map("created_at") @default(now())
   updatedAt     DateTime @map("updated_at") @updatedAt
 
-  user      User       @relation(fields: [userId], references: [id])
-  course    Course     @relation(fields: [courseId], references: [id])
-  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id])
+  // Relations
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
 
   @@map("payments")
 }
@@ -212,8 +224,9 @@ model ActivationCode {
   createdBy String?  @map("created_by") @db.Uuid
   createdAt DateTime @map("created_at") @default(now())
 
-  course Course @relation(fields: [courseId], references: [id])
-  user   User?  @relation(fields: [userId], references: [id])
+  // Relations
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("activation_codes")
 }
@@ -228,7 +241,8 @@ model Notification {
   link      String?
   createdAt DateTime @map("created_at") @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
 }
@@ -241,6 +255,9 @@ model SiteContent {
   updatedBy String?  @map("updated_by") @db.Uuid
   createdAt DateTime @map("created_at") @default(now())
   updatedAt DateTime @map("updated_at") @updatedAt
+
+  // Relations
+  editor User? @relation(fields: [updatedBy], references: [id], onDelete: SetNull)
 
   @@map("site_content")
 }
