@@ -12,9 +12,9 @@ export default function CoursePage({
 }) {
   const locale = (isLocale(params.locale) ? params.locale : "ar") as Locale;
   const tr = t(locale);
-
+  
   const course = courses.find((c) => c.slug === params.slug);
-
+  
   if (!course) {
     notFound();
   }
@@ -54,65 +54,22 @@ export default function CoursePage({
               {course.description?.[locale] || course.short[locale]}
             </p>
           </div>
-
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold text-ink dark:text-night-text">
-              {locale === "ar" ? "ماذا ستتعلم؟" : "What you'll learn"}
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-brand"></div>
-                  <span className="text-sm text-muted dark:text-night-muted">
-                    {locale === "ar"
-                      ? `تعلم المهارة الأساسية رقم ${i}`
-                      : `Learn fundamental skill ${i}`}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold text-ink dark:text-night-text">
-              {locale === "ar" ? "محتوى الدورة" : "Course content"}
-            </h2>
-            <div className="mt-4 space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 rounded-2xl border border-stroke p-4 dark:border-night-stroke"
-                >
-                  <PlayCircle className="h-5 w-5 text-brand" />
-                  <div>
-                    <h3 className="font-medium text-ink dark:text-night-text">
-                      {locale === "ar" ? `المحاضرة ${i}` : `Lecture ${i}`}
-                    </h3>
-                    <p className="text-xs text-muted dark:text-night-muted">
-                      {course.hoursMin * 6} {tr.courses.details.minutes}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         <aside className="space-y-4">
           <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
-            {/* ✅ التعديل هنا */}
+            {/* CORRECT - Using courses.details.duration */}
             <div className="text-sm text-muted dark:text-night-muted">
               {tr.courses.details.duration}
             </div>
-
-            {/* ✅ والتعديل هنا */}
             <div className="mt-1 text-lg font-semibold text-ink dark:text-night-text">
               {course.hoursMin}+ {tr.courses.details.hours}
             </div>
-
+            
             <div className="mt-4 text-sm text-muted dark:text-night-muted">
               {locale === "ar" ? "السعر" : "Price"}
             </div>
+            {/* CORRECT - Using formatCurrency */}
             <div className="mt-1 text-2xl font-semibold text-ink dark:text-night-text">
               {formatCurrency(locale, course.priceIQD)}
             </div>
@@ -148,11 +105,6 @@ export default function CoursePage({
                 </div>
               </div>
             </div>
-            <p className="mt-3 text-sm text-muted dark:text-night-muted">
-              {locale === "ar"
-                ? "أخصائية نفسية ومطورة ذاتية مع أكثر من 10 سنوات خبرة"
-                : "Psychologist and self-development coach with 10+ years experience"}
-            </p>
           </div>
 
           <div className="rounded-3xl border border-stroke bg-white p-6 shadow-soft dark:border-night-stroke dark:bg-night-surface">
