@@ -19,7 +19,7 @@ export default function CoursePage({
     notFound();
   }
 
-  // Mock features for the course (in a real app, these would come from the database)
+  // Mock features for the course
   const features = [
     { icon: Clock, text: `${course.hoursMin}+ ${tr.courses.details.hours}` },
     { icon: Users, text: locale === "ar" ? "٢٥٠+ طالب" : "250+ students" },
@@ -96,7 +96,7 @@ export default function CoursePage({
                       {locale === "ar" ? `المحاضرة ${i}` : `Lecture ${i}`}
                     </h3>
                     <p className="text-xs text-muted dark:text-night-muted">
-                      {course.hoursMin * 6} {tr.courses.details.hours}
+                      {course.hoursMin * 6} {tr.courses.details.minutes}
                     </p>
                   </div>
                 </div>
