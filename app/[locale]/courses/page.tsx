@@ -19,7 +19,8 @@ interface DBCourse {
 
 export default function CoursesPage({ params }: { params: { locale: string } }) {
   const locale = (isLocale(params.locale) ? params.locale : "ar") as Locale;
-  const tr = t(locale);
+  // ✅ FIXED: Get the courses section directly
+  const tr = t(locale).courses;
 
   const [dbCourses, setDbCourses] = useState<DBCourse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,19 +97,19 @@ export default function CoursesPage({ params }: { params: { locale: string } }) 
 
   return (
     <Container className="py-10">
-      {/* Rest of your JSX remains exactly the same */}
+      {/* ✅ FIXED: Using tr.title instead of tr.coursesPage.title */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-ink dark:text-night-text">{tr.coursesPage.title}</h1>
-        <p className="mt-2 text-sm leading-7 text-muted dark:text-night-muted">{tr.coursesPage.subtitle}</p>
+        <h1 className="text-2xl font-semibold text-ink dark:text-night-text">{tr.title}</h1>
+        <p className="mt-2 text-sm leading-7 text-muted dark:text-night-muted">{tr.subtitle}</p>
       </div>
 
-      {/* Search and filter section - same as before */}
+      {/* Search and filter section */}
       <div className="mb-6 grid gap-3 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder={tr.coursesPage.search}
+            placeholder={tr.search}
             className="w-full rounded-2xl border border-stroke bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand/20 dark:border-night-stroke dark:bg-night-surface dark:text-night-text"
           />
         </div>
@@ -118,8 +119,8 @@ export default function CoursesPage({ params }: { params: { locale: string } }) 
             onChange={(e) => setSort(e.target.value as any)}
             className="w-full rounded-2xl border border-stroke bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand/20 dark:border-night-stroke dark:bg-night-surface dark:text-night-text"
           >
-            <option value="asc">{tr.coursesPage.sortPriceAsc}</option>
-            <option value="desc">{tr.coursesPage.sortPriceDesc}</option>
+            <option value="asc">{tr.sortPriceAsc}</option>
+            <option value="desc">{tr.sortPriceDesc}</option>
           </select>
           <button
             onClick={() => {
@@ -129,14 +130,14 @@ export default function CoursesPage({ params }: { params: { locale: string } }) 
             }}
             className="shrink-0 rounded-2xl bg-bg px-4 py-3 text-sm font-semibold text-ink transition hover:opacity-90 dark:bg-night-bg dark:text-night-text"
           >
-            {tr.coursesPage.clear}
+            {tr.clear}
           </button>
         </div>
       </div>
 
-      {/* Tags filter - same as before */}
+      {/* Tags filter */}
       <div className="mb-6 rounded-3xl border border-stroke bg-white p-5 shadow-soft dark:border-night-stroke dark:bg-night-surface">
-        <div className="text-sm font-semibold text-ink dark:text-night-text">{tr.coursesPage.filter}</div>
+        <div className="text-sm font-semibold text-ink dark:text-night-text">{tr.filter}</div>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             onClick={() => setTag(null)}
@@ -164,10 +165,10 @@ export default function CoursesPage({ params }: { params: { locale: string } }) 
         </div>
       </div>
 
-      {/* Courses grid - same as before */}
+      {/* Courses grid */}
       {filtered.length === 0 ? (
         <div className="rounded-3xl border border-stroke bg-white p-6 text-sm text-muted shadow-soft dark:border-night-stroke dark:bg-night-surface dark:text-night-muted">
-          {tr.coursesPage.empty}
+          {tr.empty}
         </div>
       ) : (
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
