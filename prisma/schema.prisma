@@ -65,18 +65,21 @@ model Section {
 }
 
 model Lesson {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   title       String
-  videoUrl    String?  @map("video_url")
+  description String?
+  videoUrl    String?   @map("video_url")
   duration    Int?
   order       Int
-  free        Boolean  @default(false)
-  sectionId   String   @map("section_id") @db.Uuid
-  createdAt   DateTime @map("created_at") @default(now())
+  free        Boolean   @default(false)
+  sectionId   String    @map("section_id") @db.Uuid
+  createdAt   DateTime  @map("created_at") @default(now())
+  updatedAt   DateTime  @map("updated_at") @updatedAt
 
-  section      Section          @relation(fields: [sectionId], references: [id])
-  completions  Completion[]
-  comments     Comment[]        // هذه العلاقة مهمة جداً!
+  // Relations
+  section         Section           @relation(fields: [sectionId], references: [id])
+  completedLessons CompletedLesson[]
+  comments        Comment[]         // <--- أضف هذا السطر فقط!
 
   @@map("lessons")
 }
